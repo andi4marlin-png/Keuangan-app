@@ -3,224 +3,295 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brankas Akun Digital</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Keuangan Keluarga & Rencana Masa Depan</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background-color: #f4f6f9; }
-        .card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .hidden { display: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f0f4f8; padding: 15px; max-width: 500px; margin: 0 auto; }
+        
+        .header { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .saldo-utama { font-size: 32px; font-weight: bold; margin: 10px 0; }
+        
+        .ringkas { display: flex; gap: 10px; margin: 12px 0; }
+        .ringkas > div { flex: 1; padding: 10px; border-radius: 8px; text-align: center; font-size: 14px; }
+        .masuk { background: #dcfce7; color: #166534; }
+        .keluar { background: #fee2e2; color: #991b1b; }
+        .sisa-ramalan { background: #eff6ff; color: #1e40af; margin-top: 10px; width: 100%; padding: 10px; border-radius: 8px; text-align: center; }
+        
+        .kartu { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        h3 { color: #333; margin-bottom: 10px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 8px;}
+        
+        input, select, button { width: 100%; padding: 10px; margin: 6px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; }
+        
+        button { background: #2563eb; color: white; border: none; font-weight: 500; cursor: pointer; margin-top: 8px; transition: 0.2s; }
+        button:hover { background: #1d4ed8; }
+        button.hijau { background: #16a34a; }
+        button.hijau:hover { background: #15803d; }
+        button.oren { background: #f59e0b; }
+        button.oren:hover { background: #d97706; }
+        button.merah { background: #ef4444; padding: 5px 10px; width: auto; font-size: 12px; border-radius: 6px;}
+        button.merah:hover { background: #dc2626; }
+        
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+        .item:last-child { border-bottom: none; }
+        .detail-item { display: flex; flex-direction: column; gap: 4px; }
+        
+        .jumlah-masuk { color: #166534; font-weight: 600; }
+        .jumlah-keluar { color: #991b1b; font-weight: 600; }
+        .jumlah-ramal { color: #d97706; font-weight: 600; }
+        .label-kecil { font-size: 12px; color: #666; margin-bottom: 5px; }
+        .tanggal-badge { font-size: 11px; color: #888; }
+        .loading-text { text-align: center; color: #666; font-size: 14px; padding: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container my-5">
-    <div id="auth-section" class="row justify-content-center">
-        <div class="col-md-5">
-            <div id="login-card" class="card p-4">
-                <h3 class="text-center mb-4">Masuk Brankas</h3>
-                <form id="login-form">
-                    <div class="mb-3">
-                        <label class="form-label">Username</label>
-                        <input type="text" id="login-user" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Kata Sandi</label>
-                        <input type="password" id="login-pass" class="form-control" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100 mb-3">Masuk</button>
-                    <p class="text-center small">Belum punya akun? <a href="#" id="go-to-reg">Registrasi di sini</a></p>
-                </form>
-            </div>
-
-            <div id="register-card" class="card p-4 hidden">
-                <h3 class="text-center mb-4">Buat Akun Utama</h3>
-                <form id="register-form">
-                    <div class="mb-3">
-                        <label class="form-label">Buat Username</label>
-                        <input type="text" id="reg-user" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Buat Kata Sandi</label>
-                        <input type="password" id="reg-pass" class="form-control" required>
-                    </div>
-                    <button type="submit" class="btn btn-success w-100 mb-3">Daftar</button>
-                    <p class="text-center small">Sudah punya akun? <a href="#" id="go-to-login">Login di sini</a></p>
-                </form>
-            </div>
+<div class="header">
+    <h3>Saldo Keuangan Saat Ini</h3>
+    <div class="saldo-utama" id="saldoUtama">Menghubungkan...</div>
+    <div class="ringkas">
+        <div class="masuk">
+            <div>Pemasukan</div>
+            <div id="totalMasuk">Rp 0</div>
+        </div>
+        <div class="keluar">
+            <div>Pengeluaran</div>
+            <div id="totalKeluar">Rp 0</div>
         </div>
     </div>
-
-    <div id="main-section" class="row justify-content-center hidden">
-        <div class="col-md-8">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Penyimpanan Akun Sosial & Marketplace</h2>
-                <button id="logout-btn" class="btn btn-danger btn-sm">Keluar</button>
-            </div>
-
-            <div class="card p-4 mb-4">
-                <h5>Tambah / Perbarui Akun</h5>
-                <form id="account-form" class="row g-3 align-items-end">
-                    <div class="col-md-3">
-                        <label class="form-label">Platform</label>
-                        <select id="acc-platform" class="form-select">
-                            <option value="Instagram">Instagram</option>
-                            <option value="Shopee">Shopee</option>
-                            <option value="Tokopedia">Tokopedia</option>
-                            <option value="Facebook">Facebook</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Username / Email</label>
-                        <input type="text" id="acc-username" class="form-control" required>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Sandi</label>
-                        <input type="text" id="acc-password" class="form-control" required>
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">Simpan</button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="card p-4">
-                <h5>Daftar Akun Tersimpan</h5>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Platform</th>
-                                <th>Username/Email</th>
-                                <th>Sandi</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="account-table-body">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
-
+    <div class="ringkas">
+        <div class="sisa-ramalan">
+            <div>Estimasi Sisa Nanti (Saldo + Rencana Masuk - Rencana Keluar)</div>
+            <div id="sisaNanti" style="font-size: 18px; font-weight: bold; margin-top: 4px;">Rp 0</div>
         </div>
     </div>
 </div>
 
+<div class="kartu">
+    <h3>➕ Tambah Transaksi Real</h3>
+    <select id="jenis">
+        <option value="masuk">Pemasukan</option>
+        <option value="keluar">Pengeluaran</option>
+    </select>
+    <select id="kategori">
+        <option value="">-- Pilih Kategori --</option>
+        <option value="Gaji">Gaji</option>
+        <option value="Bonus">Bonus/Rezeki Lain</option>
+        <option value="Makan">Makan & Minum</option>
+        <option value="Tagihan">Tagihan Rumah</option>
+        <option value="Sekolah">Pendidikan</option>
+        <option value="Kesehatan">Kesehatan</option>
+        <option value="Belanja">Belanja Bulanan</option>
+        <option value="Transport">Transportasi</option>
+        <option value="Lainnya">Lainnya</option>
+    </select>
+    <input type="text" id="keterangan" placeholder="Keterangan (Opsional)">
+    <input type="number" id="jumlah" placeholder="Jumlah Uang (Rp)">
+    <input type="date" id="tanggal">
+    <button id="btnTransaksi" onclick="tambahTransaksi()">Simpan Transaksi</button>
+</div>
+
+<div class="kartu">
+    <h3>📅 Perkiraan Pemasukan Mendatang</h3>
+    <p class="label-kecil">Masukan uang yang PASTI akan diterima nanti</p>
+    <input type="text" id="ketPemasukanNanti" placeholder="Sumber Dana (contoh: Gaji, Piutang)">
+    <input type="number" id="jmlPemasukanNanti" placeholder="Perkiraan Nominal (Rp)">
+    <button class="hijau" id="btnRamalanMasuk" onclick="tambahRamalanMasuk()">Simpan Rencana Pemasukan</button>
+</div>
+
+<div class="kartu">
+    <h3>📅 Perkiraan Biaya Mendatang</h3>
+    <p class="label-kecil">Masukan biaya yang belum dibayar tapi PASTI akan keluar nanti</p>
+    <input type="text" id="ketBiaya" placeholder="Kebutuhan (contoh: Cicilan Mobil, Listrik)">
+    <input type="number" id="jmlBiaya" placeholder="Perkiraan Biaya (Rp)">
+    <button class="oren" id="btnRamalanKeluar" onclick="tambahRamalanKeluar()">Simpan Rencana Biaya</button>
+</div>
+
+<div class="kartu">
+    <h3>📋 Riwayat Transaksi & Rencana (Cloud Database)</h3>
+    <div id="daftarIsi"><p class="loading-text">Memuat data dari database...</p></div>
+</div>
+
 <script>
-    // Elemen DOM
-    const loginCard = document.getElementById('login-card');
-    const registerCard = document.getElementById('register-card');
-    const authSection = document.getElementById('auth-section');
-    const mainSection = document.getElementById('main-section');
-    const accountTableBody = document.getElementById('account-table-body');
+// --- KONFIGURASI SUPABASE ---
+const SUPABASE_URL = 'https://uordvgtdkouqhyxaidjo.supabase.co/rest/v1/​'; 
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvcmR2Z3Rka291cWh5eGFpZGpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0MzgzMTgsImV4cCI6MjA5OTAxNDMxOH0.7is6vPTnbTge42w-8JKq62z5f42_km5EOKx-IcSyltI​';
 
-    // Navigasi Form Antara Login & Reg
-    document.getElementById('go-to-reg').addEventListener('click', () => {
-        loginCard.classList.add('hidden');
-        registerCard.classList.remove('hidden');
+// Inisialisasi koneksi ke Supabase
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+document.getElementById('tanggal').valueAsDate = new Date();
+
+let dataTransaksi = [];
+let dataRamalanMasuk = [];
+let dataRamalanKeluar = [];
+
+function keRupiah(angka) {
+    return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+// Fungsi Mengambil Data Keseluruhan dari Cloud Supabase
+async function muatDataDariDatabase() {
+    try {
+        // Ambil data paralel dari 3 tabel berbeda
+        const resTransaksi = await _supabase.from('transaksi').select('*').order('id', { ascending: false });
+        const resRamalanMasuk = await _supabase.from('ramalan_masuk').select('*').order('id', { ascending: false });
+        const resRamalanKeluar = await _supabase.from('ramalan_keluar').select('*').order('id', { ascending: false });
+
+        dataTransaksi = resTransaksi.data || [];
+        dataRamalanMasuk = resRamalanMasuk.data || [];
+        dataRamalanKeluar = resRamalanKeluar.data || [];
+
+        perbaruiTampilanLayar();
+    } catch (err) {
+        console.error("Gagal memuat data:", err);
+        document.getElementById('daftarIsi').innerHTML = '<p style="color:red; text-align:center;">Gaji/Koneksi gagal terhubung ke database.</p>';
+    }
+}
+
+// Mengolah angka dan memperbarui antarmuka pengguna
+function perbaruiTampilanLayar() {
+    let totalM = 0, totalK = 0, totalRM = 0, totalRK = 0, tampilHTML = '';
+    
+    // 1. Render Rencana Masuk
+    dataRamalanMasuk.forEach((item) => {
+        totalRM += parseFloat(item.nilai);
+        tampilHTML += `
+        <div class="item">
+            <div class="detail-item">
+                <div>📅 <strong style="color: #166534;">[Rencana Masuk]</strong> ${item.ket}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span class="jumlah-masuk">+${keRupiah(item.nilai)}</span>
+                <button class="merah" onclick="hapusData('ramalan_masuk', ${item.id})">×</button>
+            </div>
+        </div>`;
     });
-    document.getElementById('go-to-login').addEventListener('click', () => {
-        registerCard.classList.add('hidden');
-        loginCard.classList.remove('remove');
-        loginCard.classList.remove('hidden');
+
+    // 2. Render Rencana Keluar
+    dataRamalanKeluar.forEach((item) => {
+        totalRK += parseFloat(item.nilai);
+        tampilHTML += `
+        <div class="item">
+            <div class="detail-item">
+                <div>📅 <strong style="color: #991b1b;">[Rencana Biaya]</strong> ${item.ket}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span class="jumlah-ramal">-${keRupiah(item.nilai)}</span>
+                <button class="merah" onclick="hapusData('ramalan_keluar', ${item.id})">×</button>
+            </div>
+        </div>`;
     });
 
-    // Proses Registrasi Akun Utama
-    document.getElementById('register-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const user = document.getElementById('reg-user').value;
-        const pass = document.getElementById('reg-pass').value;
-
-        localStorage.setItem('masterUser', user);
-        localStorage.setItem('masterPass', pass);
-        alert('Registrasi sukses! Silakan login.');
-        registerCard.classList.add('hidden');
-        loginCard.classList.remove('hidden');
+    // 3. Render Transaksi Nyata
+    dataTransaksi.forEach((item) => {
+        if (item.jenis === 'masuk') totalM += parseFloat(item.nilai);
+        else totalK += parseFloat(item.nilai);
+        
+        let teksKategori = item.keterangan ? `${item.kategori} - ${item.keterangan}` : item.kategori;
+        
+        tampilHTML += `
+        <div class="item">
+            <div class="detail-item">
+                <div>${teksKategori}</div>
+                <div class="tanggal-badge">${item.tanggal}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span class="${item.jenis === 'masuk' ? 'jumlah-masuk' : 'jumlah-keluar'}">
+                    ${item.jenis === 'masuk' ? '+' : '-'}${keRupiah(item.nilai)}
+                </span>
+                <button class="merah" onclick="hapusData('transaksi', ${item.id})">×</button>
+            </div>
+        </div>`;
     });
 
-    // Proses Login Akun Utama
-    document.getElementById('login-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const user = document.getElementById('login-user').value;
-        const pass = document.getElementById('login-pass').value;
+    let saldoSekarang = totalM - totalK;
+    let estimasiNanti = saldoSekarang + totalRM - totalRK;
 
-        const storedUser = localStorage.getItem('masterUser');
-        const storedPass = localStorage.getItem('masterPass');
+    document.getElementById('saldoUtama').textContent = keRupiah(saldoSekarang);
+    document.getElementById('totalMasuk').textContent = keRupiah(totalM);
+    document.getElementById('totalKeluar').textContent = keRupiah(totalK);
+    document.getElementById('sisaNanti').textContent = keRupiah(estimasiNanti);
+    
+    document.getElementById('sisaNanti').style.color = (estimasiNanti < 0) ? '#ef4444' : '#1e40af';
+    document.getElementById('daftarIsi').innerHTML = tampilHTML || '<p style="color:#888;text-align:center;padding:15px;">Belum ada data transaksi atau rencana</p>';
+}
 
-        if (user === storedUser && pass === storedPass) {
-            showMainPage();
-        } else {
-            alert('Username atau Password salah/belum terdaftar!');
-        }
-    });
+// Fungsi Tambah Transaksi Real ke Supabase
+async function tambahTransaksi() {
+    const jenis = document.getElementById('jenis').value;
+    const kategori = document.getElementById('kategori').value;
+    const keterangan = document.getElementById('keterangan').value.trim();
+    const nilai = parseInt(document.getElementById('jumlah').value);
+    const tanggal = document.getElementById('tanggal').value;
 
-    // Keluar (Logout)
-    document.getElementById('logout-btn').addEventListener('click', () => {
-        mainSection.classList.add('hidden');
-        authSection.classList.remove('hidden');
-        document.getElementById('login-form').reset();
-    });
-
-    // Menampilkan Halaman Utama & Memuat Data
-    function showMainPage() {
-        authSection.classList.add('hidden');
-        mainSection.classList.remove('hidden');
-        renderAccounts();
+    if (!kategori || !nilai || nilai <= 0) { 
+        alert('Pilih kategori dan isi jumlah uang dengan benar!'); 
+        return; 
     }
 
-    // Mengambil dan Menampilkan Data Akun Media Sosial/Marketplace
-    function renderAccounts() {
-        accountTableBody.innerHTML = '';
-        const accounts = JSON.parse(localStorage.getItem('savedAccounts')) || [];
+    document.getElementById('btnTransaksi').disabled = true;
+    
+    await _supabase.from('transaksi').insert([{ jenis, kategori, keterangan, nilai, tanggal }]);
+    
+    document.getElementById('kategori').value = '';
+    document.getElementById('keterangan').value = '';
+    document.getElementById('jumlah').value = '';
+    document.getElementById('btnTransaksi').disabled = false;
 
-        accounts.forEach((acc, index) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><strong>${acc.platform}</strong></td>
-                <td>${acc.username}</td>
-                <td><input type="password" value="${acc.password}" class="form-control form-control-sm d-inline-block w-auto" readonly id="pass-${index}"> 
-                    <button class="btn btn-sm btn-outline-secondary py-0" onclick="toggleViewPass(${index})">👁️</button>
-                </td>
-                <td><button class="btn btn-danger btn-sm" onclick="deleteAccount(${index})">Hapus</button></td>
-            `;
-            accountTableBody.appendChild(row);
-        });
+    muatDataDariDatabase();
+}
+
+// Fungsi Tambah Rencana Pemasukan ke Supabase
+async function tambahRamalanMasuk() {
+    const ket = document.getElementById('ketPemasukanNanti').value.trim();
+    const nilai = parseInt(document.getElementById('jmlPemasukanNanti').value);
+
+    if (!ket || !nilai || nilai <= 0) { 
+        alert('Isi data dengan benar!'); 
+        return; 
     }
 
-    // Menyimpan Akun Baru
-    document.getElementById('account-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const platform = document.getElementById('acc-platform').value;
-        const username = document.getElementById('acc-username').value;
-        const password = document.getElementById('acc-password').value;
+    document.getElementById('btnRamalanMasuk').disabled = true;
+    await _supabase.from('ramalan_masuk').insert([{ ket, nilai }]);
+    
+    document.getElementById('ketPemasukanNanti').value = '';
+    document.getElementById('jmlPemasukanNanti').value = '';
+    document.getElementById('btnRamalanMasuk').disabled = false;
 
-        let accounts = JSON.parse(localStorage.getItem('savedAccounts')) || [];
-        accounts.push({ platform, username, password });
-        localStorage.setItem('savedAccounts', JSON.stringify(accounts));
+    muatDataDariDatabase();
+}
 
-        document.getElementById('account-form').reset();
-        renderAccounts();
-    });
+// Fungsi Tambah Rencana Pengeluaran ke Supabase
+async function tambahRamalanKeluar() {
+    const ket = document.getElementById('ketBiaya').value.trim();
+    const nilai = parseInt(document.getElementById('jmlBiaya').value);
 
-    // Hapus Akun
-    function deleteAccount(index) {
-        if(confirm('Yakin ingin menghapus akun ini?')) {
-            let accounts = JSON.parse(localStorage.getItem('savedAccounts')) || [];
-            accounts.splice(index, 1);
-            localStorage.setItem('savedAccounts', JSON.stringify(accounts));
-            renderAccounts();
-        }
+    if (!ket || !nilai || nilai <= 0) { 
+        alert('Isi data dengan benar!'); 
+        return; 
     }
 
-    // Intip/Lihat Password Tersembunyi
-    function toggleViewPass(index) {
-        const passInput = document.getElementById(`pass-${index}`);
-        if (passInput.type === "password") {
-            passInput.type = "text";
-        } else {
-            passInput.type = "password";
-        }
+    document.getElementById('btnRamalanKeluar').disabled = true;
+    await _supabase.from('ramalan_keluar').insert([{ ket, nilai }]);
+    
+    document.getElementById('ketBiaya').value = '';
+    document.getElementById('jmlBiaya').value = '';
+    document.getElementById('btnRamalanKeluar').disabled = false;
+
+    muatDataDariDatabase();
+}
+
+// Fungsi Hapus Data Langsung Dari Baris Database
+async function hapusData(namaTabel, id) {
+    if (confirm('Yakin ingin menghapus data ini dari cloud database?')) {
+        await _supabase.from(namaTabel).delete().eq('id', id);
+        muatDataDariDatabase();
     }
+}
+
+// Menjalankan fungsi penarikan data pertama kali saat web dibuka
+muatDataDariDatabase();
 </script>
-
 </body>
 </html>
