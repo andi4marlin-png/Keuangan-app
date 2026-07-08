@@ -92,7 +92,7 @@
 </div>
 
 <div class="kartu">
-    <h3>📅 Perkiraan Pemasukan Mendatang</h3>
+    <h3> Perkiraan Pemasukan Mendatang</h3>
     <p class="label-kecil">Masukan uang yang PASTI akan diterima nanti</p>
     <input type="text" id="ketPemasukanNanti" placeholder="Sumber Dana (contoh: Gaji, Piutang)">
     <input type="number" id="jmlPemasukanNanti" placeholder="Perkiraan Nominal (Rp)">
@@ -100,7 +100,7 @@
 </div>
 
 <div class="kartu">
-    <h3>📅 Perkiraan Biaya Mendatang</h3>
+    <h3> Perkiraan Biaya Mendatang</h3>
     <p class="label-kecil">Masukan biaya yang belum dibayar tapi PASTI akan keluar nanti</p>
     <input type="text" id="ketBiaya" placeholder="Kebutuhan (contoh: Cicilan Mobil, Listrik)">
     <input type="number" id="jmlBiaya" placeholder="Perkiraan Biaya (Rp)">
@@ -108,7 +108,7 @@
 </div>
 
 <div class="kartu">
-    <h3>📋 Riwayat Transaksi & Rencana (Cloud Database)</h3>
+    </h3>Riwayat Transaksi & Rencana (Cloud Database)</h3>
     <div id="daftarIsi"><p class="loading-text">Memuat data dari database...</p></div>
 </div>
 
@@ -162,7 +162,7 @@ function perbaruiTampilanLayar() {
         tampilHTML += `
         <div class="item">
             <div class="detail-item">
-                <div>📅 <strong style="color: #166534;">[Rencana Masuk]</strong> ${item.ket}</div>
+                <div> <strong style="color: #166534;">[Rencana Masuk]</strong> ${item.ket}</div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
                 <span class="jumlah-masuk">+${keRupiah(item.nilai)}</span>
@@ -176,7 +176,7 @@ function perbaruiTampilanLayar() {
         tampilHTML += `
         <div class="item">
             <div class="detail-item">
-                <div>📅 <strong style="color: #991b1b;">[Rencana Biaya]</strong> ${item.ket}</div>
+                <div><strong style="color: #991b1b;">[Rencana Biaya]</strong> ${item.ket}</div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
                 <span class="jumlah-ramal">-${keRupiah(item.nilai)}</span>
