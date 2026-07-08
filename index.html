@@ -1,120 +1,7 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keuangan Keluarga & Rencana Masa Depan</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: #f0f4f8; padding: 15px; max-width: 500px; margin: 0 auto; }
-        
-        .header { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .saldo-utama { font-size: 32px; font-weight: bold; margin: 10px 0; }
-        
-        .ringkas { display: flex; gap: 10px; margin: 12px 0; }
-        .ringkas > div { flex: 1; padding: 10px; border-radius: 8px; text-align: center; font-size: 14px; }
-        .masuk { background: #dcfce7; color: #166534; }
-        .keluar { background: #fee2e2; color: #991b1b; }
-        .sisa-ramalan { background: #eff6ff; color: #1e40af; margin-top: 10px; width: 100%; padding: 10px; border-radius: 8px; text-align: center; }
-        
-        .kartu { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        h3 { color: #333; margin-bottom: 10px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 8px;}
-        
-        input, select, button { width: 100%; padding: 10px; margin: 6px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; }
-        
-        button { background: #2563eb; color: white; border: none; font-weight: 500; cursor: pointer; margin-top: 8px; transition: 0.2s; }
-        button:hover { background: #1d4ed8; }
-        button.hijau { background: #16a34a; }
-        button.hijau:hover { background: #15803d; }
-        button.oren { background: #f59e0b; }
-        button.oren:hover { background: #d97706; }
-        button.merah { background: #ef4444; padding: 5px 10px; width: auto; font-size: 12px; border-radius: 6px;}
-        button.merah:hover { background: #dc2626; }
-        
-        .item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; font-size: 14px; }
-        .item:last-child { border-bottom: none; }
-        .detail-item { display: flex; flex-direction: column; gap: 4px; }
-        
-        .jumlah-masuk { color: #166534; font-weight: 600; }
-        .jumlah-keluar { color: #991b1b; font-weight: 600; }
-        .jumlah-ramal { color: #d97706; font-weight: 600; }
-        .label-kecil { font-size: 12px; color: #666; margin-bottom: 5px; }
-        .tanggal-badge { font-size: 11px; color: #888; }
-        .loading-text { text-align: center; color: #666; font-size: 14px; padding: 10px; }
-    </style>
-</head>
-<body>
-
-<div class="header">
-    <h3>Saldo Keuangan Saat Ini</h3>
-    <div class="saldo-utama" id="saldoUtama">Menghubungkan...</div>
-    <div class="ringkas">
-        <div class="masuk">
-            <div>Pemasukan</div>
-            <div id="totalMasuk">Rp 0</div>
-        </div>
-        <div class="keluar">
-            <div>Pengeluaran</div>
-            <div id="totalKeluar">Rp 0</div>
-        </div>
-    </div>
-    <div class="ringkas">
-        <div class="sisa-ramalan">
-            <div>Estimasi Sisa Nanti (Saldo + Rencana Masuk - Rencana Keluar)</div>
-            <div id="sisaNanti" style="font-size: 18px; font-weight: bold; margin-top: 4px;">Rp 0</div>
-        </div>
-    </div>
-</div>
-
-<div class="kartu">
-    <h3>➕ Tambah Transaksi Real</h3>
-    <select id="jenis">
-        <option value="masuk">Pemasukan</option>
-        <option value="keluar">Pengeluaran</option>
-    </select>
-    <select id="kategori">
-        <option value="">-- Pilih Kategori --</option>
-        <option value="Gaji">Gaji</option>
-        <option value="Bonus">Bonus/Rezeki Lain</option>
-        <option value="Makan">Makan & Minum</option>
-        <option value="Tagihan">Tagihan Rumah</option>
-        <option value="Sekolah">Pendidikan</option>
-        <option value="Kesehatan">Kesehatan</option>
-        <option value="Belanja">Belanja Bulanan</option>
-        <option value="Transport">Transportasi</option>
-        <option value="Lainnya">Lainnya</option>
-    </select>
-    <input type="text" id="keterangan" placeholder="Keterangan (Opsional)">
-    <input type="number" id="jumlah" placeholder="Jumlah Uang (Rp)">
-    <input type="date" id="tanggal">
-    <button id="btnTransaksi" onclick="tambahTransaksi()">Simpan Transaksi</button>
-</div>
-
-<div class="kartu">
-    <h3>📅 Perkiraan Pemasukan Mendatang</h3>
-    <p class="label-kecil">Masukan uang yang PASTI akan diterima nanti</p>
-    <input type="text" id="ketPemasukanNanti" placeholder="Sumber Dana (contoh: Gaji, Piutang)">
-    <input type="number" id="jmlPemasukanNanti" placeholder="Perkiraan Nominal (Rp)">
-    <button class="hijau" id="btnRamalanMasuk" onclick="tambahRamalanMasuk()">Simpan Rencana Pemasukan</button>
-</div>
-
-<div class="kartu">
-    <h3>📅 Perkiraan Biaya Mendatang</h3>
-    <p class="label-kecil">Masukan biaya yang belum dibayar tapi PASTI akan keluar nanti</p>
-    <input type="text" id="ketBiaya" placeholder="Kebutuhan (contoh: Cicilan Mobil, Listrik)">
-    <input type="number" id="jmlBiaya" placeholder="Perkiraan Biaya (Rp)">
-    <button class="oren" id="btnRamalanKeluar" onclick="tambahRamalanKeluar()">Simpan Rencana Biaya</button>
-</div>
-
-<div class="kartu">
-    <h3>📋 Riwayat Transaksi & Rencana (Cloud Database)</h3>
-    <div id="daftarIsi"><p class="loading-text">Memuat data dari database...</p></div>
-</div>
-
 <script>
 // --- KONFIGURASI SUPABASE ---
-const SUPABASE_URL = 'https://uordvgtdkouqhyxaidjo.supabase.co​'; 
+// Pastikan URL sudah tanpa /rest/v1/ dan Anon Key sudah diisi dengan benar
+const SUPABASE_URL = 'https://uordvgtdkouqhyxaidjo.supabase.co'; 
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvcmR2Z3Rka291cWh5eGFpZGpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0MzgzMTgsImV4cCI6MjA5OTAxNDMxOH0.7is6vPTnbTge42w-8JKq62z5f42_km5EOKx-IcSyltI​';
 
 // Inisialisasi koneksi ke Supabase
@@ -133,10 +20,13 @@ function keRupiah(angka) {
 // Fungsi Mengambil Data Keseluruhan dari Cloud Supabase
 async function muatDataDariDatabase() {
     try {
-        // Ambil data paralel dari 3 tabel berbeda
         const resTransaksi = await _supabase.from('transaksi').select('*').order('id', { ascending: false });
         const resRamalanMasuk = await _supabase.from('ramalan_masuk').select('*').order('id', { ascending: false });
         const resRamalanKeluar = await _supabase.from('ramalan_keluar').select('*').order('id', { ascending: false });
+
+        if (resTransaksi.error) console.error("Error Transaksi:", resTransaksi.error.message);
+        if (resRamalanMasuk.error) console.error("Error Rencana Masuk:", resRamalanMasuk.error.message);
+        if (resRamalanKeluar.error) console.error("Error Rencana Keluar:", resRamalanKeluar.error.message);
 
         dataTransaksi = resTransaksi.data || [];
         dataRamalanMasuk = resRamalanMasuk.data || [];
@@ -145,7 +35,7 @@ async function muatDataDariDatabase() {
         perbaruiTampilanLayar();
     } catch (err) {
         console.error("Gagal memuat data:", err);
-        document.getElementById('daftarIsi').innerHTML = '<p style="color:red; text-align:center;">Gaji/Koneksi gagal terhubung ke database.</p>';
+        document.getElementById('daftarIsi').innerHTML = '<p style="color:red; text-align:center;">Gagal terhubung ke database.</p>';
     }
 }
 
@@ -153,7 +43,6 @@ async function muatDataDariDatabase() {
 function perbaruiTampilanLayar() {
     let totalM = 0, totalK = 0, totalRM = 0, totalRK = 0, tampilHTML = '';
     
-    // 1. Render Rencana Masuk
     dataRamalanMasuk.forEach((item) => {
         totalRM += parseFloat(item.nilai);
         tampilHTML += `
@@ -168,7 +57,6 @@ function perbaruiTampilanLayar() {
         </div>`;
     });
 
-    // 2. Render Rencana Keluar
     dataRamalanKeluar.forEach((item) => {
         totalRK += parseFloat(item.nilai);
         tampilHTML += `
@@ -183,7 +71,6 @@ function perbaruiTampilanLayar() {
         </div>`;
     });
 
-    // 3. Render Transaksi Nyata
     dataTransaksi.forEach((item) => {
         if (item.jenis === 'masuk') totalM += parseFloat(item.nilai);
         else totalK += parseFloat(item.nilai);
@@ -217,7 +104,7 @@ function perbaruiTampilanLayar() {
     document.getElementById('daftarIsi').innerHTML = tampilHTML || '<p style="color:#888;text-align:center;padding:15px;">Belum ada data transaksi atau rencana</p>';
 }
 
-// Fungsi Tambah Transaksi Real ke Supabase
+// Fungsi Tambah Transaksi Real ke Supabase dengan Detektor Error
 async function tambahTransaksi() {
     const jenis = document.getElementById('jenis').value;
     const kategori = document.getElementById('kategori').value;
@@ -232,17 +119,24 @@ async function tambahTransaksi() {
 
     document.getElementById('btnTransaksi').disabled = true;
     
-    await _supabase.from('transaksi').insert([{ jenis, kategori, keterangan, nilai, tanggal }]);
+    // Menangkap respon error dari Supabase
+    const { error } = await _supabase.from('transaksi').insert([{ jenis, kategori, keterangan, nilai, tanggal }]);
     
-    document.getElementById('kategori').value = '';
-    document.getElementById('keterangan').value = '';
-    document.getElementById('jumlah').value = '';
     document.getElementById('btnTransaksi').disabled = false;
 
-    muatDataDariDatabase();
+    if (error) {
+        // MEMUNCULKAN PESAN ERROR JIKA GAGAL
+        alert('GAGAL SIMPAN: ' + error.message);
+    } else {
+        alert('Berhasil disimpan ke Database!');
+        document.getElementById('kategori').value = '';
+        document.getElementById('keterangan').value = '';
+        document.getElementById('jumlah').value = '';
+        muatDataDariDatabase();
+    }
 }
 
-// Fungsi Tambah Rencana Pemasukan ke Supabase
+// Fungsi Tambah Rencana Pemasukan dengan Detektor Error
 async function tambahRamalanMasuk() {
     const ket = document.getElementById('ketPemasukanNanti').value.trim();
     const nilai = parseInt(document.getElementById('jmlPemasukanNanti').value);
@@ -253,16 +147,20 @@ async function tambahRamalanMasuk() {
     }
 
     document.getElementById('btnRamalanMasuk').disabled = true;
-    await _supabase.from('ramalan_masuk').insert([{ ket, nilai }]);
-    
-    document.getElementById('ketPemasukanNanti').value = '';
-    document.getElementById('jmlPemasukanNanti').value = '';
+    const { error } = await _supabase.from('ramalan_masuk').insert([{ ket, nilai }]);
     document.getElementById('btnRamalanMasuk').disabled = false;
 
-    muatDataDariDatabase();
+    if (error) {
+        alert('GAGAL SIMPAN RENCANA MASUK: ' + error.message);
+    } else {
+        alert('Rencana Pemasukan Berhasil disimpan!');
+        document.getElementById('ketPemasukanNanti').value = '';
+        document.getElementById('jmlPemasukanNanti').value = '';
+        muatDataDariDatabase();
+    }
 }
 
-// Fungsi Tambah Rencana Pengeluaran ke Supabase
+// Fungsi Tambah Rencana Pengeluaran dengan Detektor Error
 async function tambahRamalanKeluar() {
     const ket = document.getElementById('ketBiaya').value.trim();
     const nilai = parseInt(document.getElementById('jmlBiaya').value);
@@ -273,25 +171,31 @@ async function tambahRamalanKeluar() {
     }
 
     document.getElementById('btnRamalanKeluar').disabled = true;
-    await _supabase.from('ramalan_keluar').insert([{ ket, nilai }]);
-    
-    document.getElementById('ketBiaya').value = '';
-    document.getElementById('jmlBiaya').value = '';
+    const { error } = await _supabase.from('ramalan_keluar').insert([{ ket, nilai }]);
     document.getElementById('btnRamalanKeluar').disabled = false;
 
-    muatDataDariDatabase();
+    if (error) {
+        alert('GAGAL SIMPAN RENCANA BIAYA: ' + error.message);
+    } else {
+        alert('Rencana Biaya Berhasil disimpan!');
+        document.getElementById('ketBiaya').value = '';
+        document.getElementById('jmlBiaya').value = '';
+        muatDataDariDatabase();
+    }
 }
 
 // Fungsi Hapus Data Langsung Dari Baris Database
 async function hapusData(namaTabel, id) {
     if (confirm('Yakin ingin menghapus data ini dari cloud database?')) {
-        await _supabase.from(namaTabel).delete().eq('id', id);
-        muatDataDariDatabase();
+        const { error } = await _supabase.from(namaTabel).delete().eq('id', id);
+        if (error) {
+            alert('Gagal menghapus: ' + error.message);
+        } else {
+            muatDataDariDatabase();
+        }
     }
 }
 
 // Menjalankan fungsi penarikan data pertama kali saat web dibuka
 muatDataDariDatabase();
 </script>
-</body>
-</html>
