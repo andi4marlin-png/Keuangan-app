@@ -111,12 +111,11 @@
     </h3>Riwayat Transaksi & Rencana (Cloud Database)</h3>
     <div id="daftarIsi"><p class="loading-text">Memuat data dari database...</p></div>
 </div>
-
 <script>
 // --- KONFIGURASI SUPABASE ---
 // Pastikan URL sudah tanpa /rest/v1/ dan Anon Key sudah diisi dengan benar
 const SUPABASE_URL = 'https://uordvgtdkouqhyxaidjo.supabase.co'; 
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvcmR2Z3Rka291cWh5eGFpZGpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0MzgzMTgsImV4cCI6MjA5OTAxNDMxOH0.7is6vPTnbTge42w-8JKq62z5f42_km5EOKx-IcSyltI​';
+const SUPABASE_ANON_KEY ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvcmR2Z3Rka291cWh5eGFpZGpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0MzgzMTgsImV4cCI6MjA5OTAxNDMxOH0.7is6vPTnbTge42w-8JKq62z5f42_km5EOKx-IcSyltI​';
 
 // Inisialisasi koneksi ke Supabase
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -162,7 +161,7 @@ function perbaruiTampilanLayar() {
         tampilHTML += `
         <div class="item">
             <div class="detail-item">
-                <div> <strong style="color: #166534;">[Rencana Masuk]</strong> ${item.ket}</div>
+                <div>📅 <strong style="color: #166534;">[Rencana Masuk]</strong> ${item.ket}</div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
                 <span class="jumlah-masuk">+${keRupiah(item.nilai)}</span>
@@ -176,7 +175,7 @@ function perbaruiTampilanLayar() {
         tampilHTML += `
         <div class="item">
             <div class="detail-item">
-                <div><strong style="color: #991b1b;">[Rencana Biaya]</strong> ${item.ket}</div>
+                <div>📅 <strong style="color: #991b1b;">[Rencana Biaya]</strong> ${item.ket}</div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
                 <span class="jumlah-ramal">-${keRupiah(item.nilai)}</span>
@@ -313,3 +312,5 @@ async function hapusData(namaTabel, id) {
 // Menjalankan fungsi penarikan data pertama kali saat web dibuka
 muatDataDariDatabase();
 </script>
+​
+<script>
